@@ -6,6 +6,7 @@ Description
 
 - [ ] Basic bootloader
 - [ ] Micro kernel with IPC
+- [ ] Kconfig, Kbuild (build.zig)
 
 ## Useful links
 
