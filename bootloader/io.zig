@@ -25,9 +25,10 @@
 //! (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 //! EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-const VGADriver = @import("vga.zig").VGADriver;
+const VGADriver = @import("vga.zig");
 
-pub fn print(driver: *VGADriver, message: *const u16) void {
+pub fn print(message: *const u16) void {
+    var driver = VGADriver.getInstance();
     var i: usize = 0;
     while (message[i] != '\x00') : (i += 1) {
         driver.putChar(message[i]);

@@ -27,23 +27,25 @@
 
 const Cursor = @import("cursor.zig");
 
-const VGADriver = struct {
-    const Self = @This();
+const Self = @This();
 
-    const VIDEO_MEMORY: *volatile u16 = 0xB8000;
-    const MAX_COLS: i32 = 80;
-    const MAX_ROWS: i32 = 25;
+const VIDEO_MEMORY: *volatile u16 = 0xB8000;
+const MAX_COLS: i32 = 80;
+const MAX_ROWS: i32 = 25;
 
-    var cursor = Cursor{
-        .max_cols = MAX_COLS,
-        .max_rows = MAX_ROWS,
-    };
-
-    var video = VIDEO_MEMORY;
-
-    pub fn putChar(c: u16) void {
-        video[(cursor.getRow() * MAX_COLS + cursor.getCol()) * 2] = c;
-        video[(cursor.getRow() * MAX_COLS + cursor.getCol()) * 2 + 1] = 0x07;
-        cursor.next();
-    }
+var cursor = Cursor{
+    .max_cols = MAX_COLS,
+    .max_rows = MAX_ROWS,
 };
+
+var video = VIDEO_MEMORY;
+
+pub fn getInstance() *Self {
+    return &Self{};
+}
+
+pub fn putChar(self: *Self, c: u16) void {
+    self.video[(self.cursor.getRow() * self.MAX_COLS + self.cursor.getCol()) * 2] = c;
+    video[(self.cursor.getRow() * self.MAX_COLS + self.cursor.getCol()) * 2 + 1] = 0x07;
+    self.cursor.next();
+}

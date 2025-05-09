@@ -34,32 +34,32 @@ var row: i32 = 0;
 var col: i32 = 0;
 
 // Some getters
-pub fn getRow() i32 {
-    return row;
+pub fn getRow(self: *Self) i32 {
+    return self.row;
 }
-pub fn getCol() i32 {
-    return col;
+pub fn getCol(self: *Self) i32 {
+    return self.col;
 }
 
-pub fn moveLeft() void {
-    if (col == 0 and row > 0) {
-        col = Self.max_cols;
-        row -= 1;
+pub fn moveLeft(self: *Self) void {
+    if (self.col == 0 and self.row > 0) {
+        self.col = self.max_cols;
+        self.row -= 1;
     } else {
-        col -= 1;
+        self.col -= 1;
     }
 }
 
-pub fn moveRight() void {
-    if (col + 1 >= Self.max_cols) {
-        col = 0;
-        row += 1;
+pub fn moveRight(self: *Self) void {
+    if (self.col + 1 >= self.max_cols) {
+        self.col = 0;
+        self.row += 1;
     }
-    if (row >= Self.max_col) {
-        row = 0;
+    if (self.row >= self.max_col) {
+        self.row = 0;
     }
 }
 
-pub fn next() void {
-    moveRight();
+pub fn next(self: *Self) void {
+    self.moveRight();
 }
