@@ -25,53 +25,40 @@
 //! (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 //! EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-const std = @import("std");
-const fmt = std.fmt;
-const Target = std.Target;
-const CrossTarget = std.Target.Query;
+const MultiBoot = extern struct {
+    magic: i32,
+    flags: i32,
+    checksum: i32,
+};
 
-const config = @import("config.zig");
+// 32 bits / 4 bytes integers
+const ALIGN = 1 << 0; // 0000 0000 0000 0000 0000 0000 0000 0001
+const MEMINFO = 1 << 1; // 0000 0000 0000 0000 0000 0000 0000 0010
+const FLAGS = ALIGN | MEMINFO; // 0000 0000 0000 0000 0000 0000 0000 0000 0011
+const MAGIC = 0x1BADB002; // 0001 1011 1010 1101 1011 0000 0000 0010
 
-pub fn build(b: *std.Build) void {
-    var _binaryName: [100]u8 = undefined;
-    var _outputFile: [100]u8 = undefined;
-    const binaryName = fmt.bufPrint(_binaryName[0..], "{s}.bin", .{config.KERNEL_NAME}) catch unreachable;
-    const outputFile = fmt.bufPrint(_outputFile[0..], "zig-out/bin/{s}", .{binaryName}) catch unreachable;
+// Define our stack size
+const STACK_SIZE = 16 * 1024; // 16 KB
 
-    const targetQuery = CrossTarget{
-        .cpu_arch = Target.Cpu.Arch.x86,
-        .os_tag = Target.Os.Tag.freestanding,
-    };
+export var stack_bytes: [STACK_SIZE]u8 align(16) linksection(".bss") = undefined;
 
-    const target = b.resolveTargetQuery(targetQuery);
+export var multiboot align(4) linksection(".multiboot") = MultiBoot{
+    .magic = MAGIC,
+    .flags = FLAGS,
+    .checksum = -(MAGIC + FLAGS),
+};
 
-    const optimize = b.standardOptimizeOption(.{});
+export fn mk_main() noreturn {
+    @import("main.zig").main();
+    noreturn;
+}
 
-    const bootloader = b.addExecutable(.{
-        .name = binaryName,
-        .root_source_file = b.path("micro-kernel/mk_main.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-
-    bootloader.setLinkerScript(b.path("micro-kernel/linker.ld"));
-    bootloader.pie = false;
-    b.installArtifact(bootloader);
-
-    const run_cmd = b.addSystemCommand(&.{
-        "C:\\Program Files\\qemu\\qemu-system-x86_64",
-        "-kernel",
-        outputFile,
-        "-serial",
-        "null",
-    });
-
-    run_cmd.step.dependOn(b.getInstallStep());
-
-    if (b.args) |args| {
-        run_cmd.addArgs(args);
-    }
-
-    const run_step = b.step("run", "Run the OS in QEMU");
-    run_step.dependOn(&run_cmd.step);
+export fn _start() callconv(.naked) noreturn {
+    asm volatile (
+        \\ mov $stack_bytes, %%esp
+        \\ add %[stack_size], %%esp
+        \\ call mk_main
+        :
+        : [stack_size] "n" (STACK_SIZE),
+    );
 }

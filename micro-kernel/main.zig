@@ -25,45 +25,11 @@
 //! (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 //! EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-const io = @import("io.zig");
 const vga = @import("vga.zig").getInstance();
-const config = @import("../config.zig");
+const io = @import("io.zig");
 
-const MultiBoot = extern struct {
-    magic: i32,
-    flags: i32,
-    checksum: i32,
-};
-
-// 32 bits / 4 bytes integers
-const ALIGN = 1 << 0; // 0000 0000 0000 0000 0000 0000 0000 0001
-const MEMINFO = 1 << 1; // 0000 0000 0000 0000 0000 0000 0000 0010
-const FLAGS = ALIGN | MEMINFO; // 0000 0000 0000 0000 0000 0000 0000 0000 0011
-const MAGIC = 0x1BADB002; // 0001 1011 1010 1101 1011 0000 0000 0010
-
-// Define our stack size
-const STACK_SIZE = 16 * 1024; // 16 KB
-
-export var stack_bytes: [STACK_SIZE]u8 align(16) linksection(".bss") = undefined;
-
-export var multiboot align(4) linksection(".multiboot") = MultiBoot{
-    .magic = MAGIC,
-    .flags = FLAGS,
-    .checksum = -(MAGIC + FLAGS),
-};
-
-export fn kmain() noreturn {
+pub fn main() noreturn {
     vga.flush();
-
+    io.print("Hello!");
     while (true) {}
-}
-
-export fn _start() callconv(.naked) noreturn {
-    asm volatile (
-        \\ mov $stack_bytes, %%esp
-        \\ add %[stack_size], %%esp
-        \\ call kmain
-        :
-        : [stack_size] "n" (STACK_SIZE),
-    );
 }
