@@ -4,8 +4,9 @@ Description
 
 ## Roadmap
 
-- [ ] Basic bootloader
+- [ ] Basic bootloader (Load kernel by config file _GRUB-like thing_)
 - [ ] Micro kernel with IPC
+- [ ] DFS - Dummy Fily System
 - [ ] Kconfig, Kbuild (build.zig)
 
 ## Useful links

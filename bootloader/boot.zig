@@ -26,7 +26,7 @@
 //! EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 const io = @import("io.zig");
-const config = @import("config.zig");
+const config = @import("../config.zig");
 
 export fn bmain() noreturn {
     io.printf("Loading {s}-{d}.{d}.{d} ...", .{
