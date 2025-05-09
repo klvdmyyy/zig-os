@@ -32,9 +32,9 @@
 /// - **mux** - Micro Unix
 ///
 /// *But you can change kernel name if you want =)*
-pub const KERNEL_NAME: []const u16 = "zurd";
+pub const KERNEL_NAME: []const u8 = "zurd";
 
 // Version of micro-kernel
-pub const KERNEL_VERSION_PATCH: u16 = 0;
-pub const KERNEL_VERSION_MINOR: u16 = 0;
-pub const KERNEL_VERSION_MAJOR: u16 = 1;
+pub const KERNEL_VERSION_PATCH: u8 = 0;
+pub const KERNEL_VERSION_MINOR: u8 = 0;
+pub const KERNEL_VERSION_MAJOR: u8 = 1;

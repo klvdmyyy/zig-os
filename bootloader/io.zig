@@ -25,17 +25,22 @@
 //! (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 //! EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-const VGADriver = @import("vga.zig");
+const VGA = @import("vga.zig");
 
-pub fn print(message: *const u16) void {
-    var driver = VGADriver.getInstance();
+pub fn print(message: [*]const u8) void {
+    const instance = VGA.getInstance();
+    var x: usize = 0;
+    var y: usize = 0;
     var i: usize = 0;
     while (message[i] != '\x00') : (i += 1) {
-        driver.putChar(message[i]);
+        instance.writeAt(message[i], 15, x, y);
+        x += 1;
+        if (x + 1 >= VGA.WIDTH) {
+            x = 0;
+            y += 1;
+        }
+        if (y >= VGA.HEIGHT) {
+            y = 0;
+        }
     }
-}
-
-pub fn printf(comptime message: *const u16, args: anytype) void {
-    const format = @import("std").fmt.format;
-    try format(print, message, args);
 }

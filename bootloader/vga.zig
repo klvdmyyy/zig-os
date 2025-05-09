@@ -25,27 +25,38 @@
 //! (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 //! EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-const Cursor = @import("cursor.zig");
+buffer: [*]volatile u16,
 
 const Self = @This();
 
-const VIDEO_MEMORY: *volatile u16 = 0xB8000;
-const MAX_COLS: i32 = 80;
-const MAX_ROWS: i32 = 25;
+pub const WIDTH = 80;
+pub const HEIGHT = 25;
+const BUFFER_ADDRESS = 0xB8000;
 
-var cursor = Cursor{
-    .max_cols = MAX_COLS,
-    .max_rows = MAX_ROWS,
+var instance = Self{
+    .buffer = @ptrFromInt(BUFFER_ADDRESS),
 };
 
-var video = VIDEO_MEMORY;
-
 pub fn getInstance() *Self {
-    return &Self{};
+    return &instance;
 }
 
-pub fn putChar(self: *Self, c: u16) void {
-    self.video[(self.cursor.getRow() * self.MAX_COLS + self.cursor.getCol()) * 2] = c;
-    video[(self.cursor.getRow() * self.MAX_COLS + self.cursor.getCol()) * 2 + 1] = 0x07;
-    self.cursor.next();
+pub fn flush(self: *Self) void {
+    var y: usize = 0;
+    while (y < HEIGHT) : (y += 1) {
+        var x: usize = 0;
+        while (x < WIDTH) : (x += 1) {
+            self.writeAt(' ', 0, x, y);
+        }
+    }
+}
+
+pub fn writeAt(self: *Self, char: u8, color: u8, x: usize, y: usize) void {
+    const index = y * WIDTH + x;
+    self.buffer[index] = createEntry(char, color);
+}
+
+fn createEntry(char: u8, color: u8) u16 {
+    const c: u16 = color;
+    return char | (c << 8);
 }
